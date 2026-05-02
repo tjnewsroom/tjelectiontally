@@ -11,8 +11,16 @@
   --text:#F0F0F8;--text2:#AAABB8;
   --dmk:#FF2B2B;--admk:#00B050;--bjp:#FF7722;--tvk:#9B30D0;--ntk:#FF8C00;--oth:#888;
 }
+
+/* ── DAY MODE ── */
+body.day-mode {
+  --bg:#F4F4F8;--bg2:#FFFFFF;--bg3:#EAEAF0;--card:#FFFFFF;--border:#D0D0DC;
+  --gold:#B8860B;--red:#E63946;--green:#1A9E3F;--blue:#1A7AC7;--muted:#888899;
+  --text:#1A1A2E;--text2:#44445A;
+}
+
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;}
 
 /* ── LOGIN ── */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;}
@@ -33,7 +41,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── HEADER ── */
-.hdr{background:var(--bg2);border-bottom:2px solid var(--gold);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:200;}
+.hdr{background:var(--bg2);border-bottom:2px solid var(--gold);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:200;transition:background .3s;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-icon{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#000;}
 .logo-text{font-size:20px;font-weight:700;color:var(--gold);}
@@ -47,9 +55,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;}
 .logout-btn:hover{border-color:var(--red);color:var(--red);}
 
+/* ── DAY/NIGHT TOGGLE ── */
+.theme-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);padding:5px 11px;border-radius:6px;cursor:pointer;
+  font-size:16px;line-height:1;transition:.2s;
+  display:flex;align-items:center;gap:5px;
+}
+.theme-btn:hover{border-color:var(--gold);color:var(--gold);}
+.theme-btn .theme-lbl{font-size:11px;font-weight:600;letter-spacing:.5px;}
+
 /* ── SCOREBOARD ── */
-.scoreboard{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
-.sc-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;position:relative;overflow:hidden;}
+.scoreboard{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border);transition:background .3s;}
+.sc-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;position:relative;overflow:hidden;transition:background .3s,border .3s;}
 .sc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .sc-card.dmk::before{background:var(--dmk)}.sc-card.admk::before{background:var(--admk)}
 .sc-card.tvk::before{background:var(--tvk)}.sc-card.ntk::before{background:var(--ntk)}
@@ -59,18 +77,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sc-sub{font-size:10px;color:var(--muted);}
 
 /* ── STATUS ── */
-.statusbar{background:var(--bg3);padding:6px 16px;display:flex;gap:16px;align-items:center;font-size:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.statusbar{background:var(--bg3);padding:6px 16px;display:flex;gap:16px;align-items:center;font-size:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;transition:background .3s;}
 .sb-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
 
 /* ── TABS ── */
-.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;gap:4px;}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;gap:4px;transition:background .3s;}
 .tab{padding:10px 18px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:.2s;}
 .tab.on{color:var(--gold);border-bottom-color:var(--gold);}
 .main{padding:12px 16px 60px;}
 
 /* ── SEARCH ── */
 .search-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
-.search-row input,.search-row select{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px;font-family:inherit;}
+.search-row input,.search-row select{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px;font-family:inherit;transition:background .3s,color .3s,border .3s;}
 .search-row input{flex:1;min-width:180px;}
 .search-row input:focus,.search-row select:focus{outline:none;border-color:var(--gold);}
 
@@ -79,7 +97,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .tbl-wrap::-webkit-scrollbar{width:4px;height:4px;}
 .tbl-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-th{background:var(--bg3);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5;white-space:nowrap;}
+th{background:var(--bg3);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5;white-space:nowrap;transition:background .3s;}
 td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
 tr:hover td{background:var(--bg3);}
 .party-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
@@ -92,14 +110,14 @@ tr:hover td{background:var(--bg3);}
 /* ── ENTRY ── */
 .entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 @media(max-width:700px){.entry-grid{grid-template-columns:1fr;}.scoreboard{grid-template-columns:repeat(3,1fr);}}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;transition:background .3s,border .3s;}
 .panel h3{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .fg2{margin-bottom:12px;}
 .fg2 label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
-.fg2 input,.fg2 select,.fg2 textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:6px;font-family:inherit;font-size:13px;}
+.fg2 input,.fg2 select,.fg2 textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:6px;font-family:inherit;font-size:13px;transition:background .3s,color .3s,border .3s;}
 .fg2 input:focus,.fg2 select:focus,.fg2 textarea:focus{outline:none;border-color:var(--gold);}
-.vote-row{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:7px;}
-.vote-row input[type=number]{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:14px;text-align:right;font-family:inherit;width:100%;outline:none;}
+.vote-row{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:7px;transition:background .3s;}
+.vote-row input[type=number]{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:14px;text-align:right;font-family:inherit;width:100%;outline:none;transition:background .3s,color .3s;}
 .vote-row input:focus{border-color:var(--gold);}
 .submit-btn{background:var(--dmk);color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;transition:.2s;}
 .submit-btn:hover{filter:brightness(1.15);}
@@ -107,7 +125,7 @@ tr:hover td{background:var(--bg3);}
 .round-tbl{width:100%;border-collapse:collapse;font-size:12px;}
 .round-tbl th{background:var(--bg2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:5px 7px;border-bottom:1px solid var(--border);}
 .round-tbl td{padding:4px 7px;border-bottom:1px solid var(--border);}
-.log-box{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;height:200px;overflow-y:auto;font-size:12px;}
+.log-box{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;height:200px;overflow-y:auto;font-size:12px;transition:background .3s;}
 .log-entry{padding:5px 0;border-bottom:1px solid var(--border);color:var(--text2);line-height:1.5;}
 .log-time{color:var(--gold);font-weight:700;}
 
@@ -123,10 +141,10 @@ tr:hover td{background:var(--bg3);}
 .toast.err{background:var(--red);color:#fff;}
 .toast.show{opacity:1;}
 
-/* ── FIX: SEARCHABLE CONSTITUENCY (replaces plain select) ── */
+/* ── SEARCHABLE CONSTITUENCY ── */
 .const-wrap{position:relative;}
 .const-search{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);
-  padding:9px 11px;border-radius:6px;font-family:inherit;font-size:13px;outline:none;}
+  padding:9px 11px;border-radius:6px;font-family:inherit;font-size:13px;outline:none;transition:background .3s,color .3s,border .3s;}
 .const-search:focus{border-color:var(--gold);}
 .const-dd{position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--card);
   border:1px solid var(--gold);border-radius:6px;max-height:210px;overflow-y:auto;
@@ -181,6 +199,13 @@ tr:hover td{background:var(--bg3);}
       <span class="clock" id="clock">--:--:--</span>
       <span style="font-size:11px;color:var(--muted)">புதுப்பிப்பு: <span id="lastUpdate" style="color:var(--text2)">—</span></span>
       <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">↻ REFRESH</button>
+
+      <!-- FIX 2: Day/Night toggle -->
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Switch theme">
+        <span id="themeIcon">☀️</span>
+        <span class="theme-lbl" id="themeLbl">DAY</span>
+      </button>
+
       <span class="user-badge" id="userBadge">👤</span>
       <button class="logout-btn" onclick="doLogout()">LOGOUT</button>
     </div>
@@ -241,13 +266,12 @@ tr:hover td{background:var(--bg3);}
     </div>
   </div>
 
-  <!-- ENTRY TAB — original structure preserved, only <select> replaced with search -->
+  <!-- ENTRY TAB -->
   <div id="tab-entry" class="main" style="display:none">
     <div class="entry-grid">
       <div class="panel">
         <h3>📥 வாக்கு புதுப்பிப்பு</h3>
 
-        <!-- CHANGE 1: searchable constituency instead of plain <select> -->
         <div class="fg2">
           <label>தொகுதி</label>
           <div class="const-wrap" id="constWrap">
@@ -257,11 +281,10 @@ tr:hover td{background:var(--bg3);}
               oninput="cdFilter()"
               onfocus="cdOpen()"
               onkeydown="cdKey(event)">
-            <input type="hidden" id="eConst"><!-- actual value, same id as original -->
+            <input type="hidden" id="eConst">
             <div class="const-dd" id="constDd"></div>
           </div>
         </div>
-        <!-- end change 1 -->
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
           <div class="fg2" style="margin:0"><label>சுற்று எண்</label><input type="number" id="eRound" value="1" min="1" max="30"></div>
@@ -274,7 +297,6 @@ tr:hover td{background:var(--bg3);}
           </div>
         </div>
 
-        <!-- ORIGINAL vote entry rows — completely unchanged -->
         <div id="partyVoteRows"></div>
 
         <div class="fg2"><label>Reporter குறிப்பு</label><textarea id="eNotes" rows="2" placeholder="விருப்பமான குறிப்பு..."></textarea></div>
@@ -336,9 +358,32 @@ let currentUser  = null;
 let constituencies = [];
 let partyVotes   = {};
 let logs         = [];
+let isDayMode    = false;
+
+// ── FIX 2: THEME TOGGLE ──────────────────────────────────
+function toggleTheme() {
+  isDayMode = !isDayMode;
+  document.body.classList.toggle('day-mode', isDayMode);
+  document.getElementById('themeIcon').textContent = isDayMode ? '🌙' : '☀️';
+  document.getElementById('themeLbl').textContent  = isDayMode ? 'NIGHT' : 'DAY';
+  try { localStorage.setItem('tj_theme', isDayMode ? 'day' : 'night'); } catch(e){}
+}
+
+function restoreTheme() {
+  try {
+    const saved = localStorage.getItem('tj_theme');
+    if (saved === 'day') {
+      isDayMode = true;
+      document.body.classList.add('day-mode');
+      document.getElementById('themeIcon').textContent = '🌙';
+      document.getElementById('themeLbl').textContent  = 'NIGHT';
+    }
+  } catch(e){}
+}
 
 // ── BOOT ────────────────────────────────────────────────
 window.addEventListener('load', async () => {
+  restoreTheme();
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) { currentUser = session.user; bootApp(); }
 });
@@ -383,7 +428,7 @@ async function bootApp() {
   startClock();
   await loadData();
   populateDistFilter();
-  populateEntryConst();   // builds the searchable dropdown
+  populateEntryConst();
   renderTable();
   updateScoreboard();
 }
@@ -443,16 +488,12 @@ function getLeader(constId) {
   };
 }
 
-// ── CHANGE 2: SCOREBOARD — count any constituency with votes entered ─
-// Original only counted status!=='pending', missing newly entered data.
-// Now: count seats whenever there is vote data (getLeader returns non-null),
-// regardless of status — matches real election counting behaviour.
 function updateScoreboard() {
   const seats = {dmk:0, admk:0, tvk:0, ntk:0, oth:0};
   let counting = 0, declared = 0, pending = 0;
   constituencies.forEach(c => {
     const l = getLeader(c.id);
-    if (l) seats[l.leading] = (seats[l.leading] || 0) + 1;  // count if ANY votes exist
+    if (l) seats[l.leading] = (seats[l.leading] || 0) + 1;
     if      (c.status === 'counting') counting++;
     else if (c.status === 'declared') declared++;
     else pending++;
@@ -505,19 +546,20 @@ function populateDistFilter() {
   if (sel) sel.innerHTML = '<option value="">அனைத்து மாவட்டம்</option>' + dists.map(d => `<option>${d}</option>`).join('');
 }
 
-// ── CHANGE 1: SEARCHABLE CONSTITUENCY DROPDOWN ───────────
-// Replaces original populateEntryConst() that built a <select>.
-// The hidden #eConst input carries the same value the original select did.
+// ── FIX 1: BLANK CONSTITUENCY ON LOAD ───────────────────
+// No longer pre-selects the first constituency (Kundrathur).
+// The hidden #eConst stays empty; vote rows render only after user picks one.
 function populateEntryConst() {
   buildCdItems();
-  // Select first constituency by default (mirrors original select behaviour)
-  if (constituencies.length && !document.getElementById('eConst').value) {
-    const c = constituencies[0];
-    cdPick(c.id, c.name, c.district);
-  }
+  // Leave blank — user must explicitly search and select
+  document.getElementById('eConst').value      = '';
+  document.getElementById('constSearch').value = '';
+  document.getElementById('partyVoteRows').innerHTML = '';
+  document.getElementById('roundLeaderView').innerHTML =
+    '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">தொகுதி தேர்வு செய்க</div>';
 }
 
-let _cdHi = -1;   // highlighted index in dropdown
+let _cdHi = -1;
 
 function buildCdItems() {
   const dd = document.getElementById('constDd');
@@ -548,7 +590,7 @@ function cdFilter() {
 }
 
 function cdOpen() {
-  buildCdItems();   // rebuild in case constituencies reloaded
+  buildCdItems();
   cdFilter();
   document.getElementById('constDd').classList.add('open');
 }
@@ -558,7 +600,7 @@ function cdPick(id, name, dist) {
   document.getElementById('constSearch').value = name + ' — ' + dist;
   document.getElementById('constDd').classList.remove('open');
   _cdHi = -1;
-  loadConstData();  // original function — unchanged
+  loadConstData();
 }
 
 function cdHilight() {
@@ -579,13 +621,12 @@ function cdKey(e) {
   else if (e.key === 'Escape') dd.classList.remove('open');
 }
 
-// Close dropdown on outside click
 document.addEventListener('click', e => {
   if (!document.getElementById('constWrap')?.contains(e.target))
     document.getElementById('constDd')?.classList.remove('open');
 });
 
-// ── ENTRY — ORIGINAL LOGIC UNCHANGED ────────────────────
+// ── ENTRY LOGIC ──────────────────────────────────────────
 function loadConstData() {
   const id = parseInt(document.getElementById('eConst')?.value);
   const c  = constituencies.find(x => x.id === id);
@@ -596,7 +637,6 @@ function loadConstData() {
   ));
   document.getElementById('eRound').value = mr > 0 ? mr + 1 : 1;
   const round = parseInt(document.getElementById('eRound').value) || 1;
-  // ── ORIGINAL vote-row render — completely unchanged ──
   document.getElementById('partyVoteRows').innerHTML = AK.map(a => {
     const p = PARTIES[a];
     const v = (partyVotes[id]?.[a] || {})[round] || '';
@@ -681,7 +721,6 @@ async function submitUpdate() {
     }]);
     if (e3) throw e3;
 
-    // Update local state immediately
     if (!partyVotes[id]) partyVotes[id] = {};
     AK.forEach(a => {
       if (!partyVotes[id][a]) partyVotes[id][a] = {};
@@ -694,7 +733,7 @@ async function submitUpdate() {
     logs.unshift({ time: new Date().toLocaleTimeString('ta-IN', {hour12:false}), name: c.name, round, leader: l ? PARTIES[l.leading]?.name : '—', notes });
     renderLog();
     renderTable();
-    updateScoreboard();   // scoreboard updates immediately after submit
+    updateScoreboard();
     renderRoundLeaderView(id);
     document.getElementById('eNotes').value = '';
     document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ta-IN', {hour12:false});
