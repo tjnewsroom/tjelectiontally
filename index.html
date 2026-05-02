@@ -122,13 +122,31 @@ tr:hover td{background:var(--bg3);}
 .toast.ok{background:var(--green);color:#000;}
 .toast.err{background:var(--red);color:#fff;}
 .toast.show{opacity:1;}
+
+/* ── FIX: SEARCHABLE CONSTITUENCY (replaces plain select) ── */
+.const-wrap{position:relative;}
+.const-search{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  padding:9px 11px;border-radius:6px;font-family:inherit;font-size:13px;outline:none;}
+.const-search:focus{border-color:var(--gold);}
+.const-dd{position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--card);
+  border:1px solid var(--gold);border-radius:6px;max-height:210px;overflow-y:auto;
+  z-index:400;display:none;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+.const-dd.open{display:block;}
+.const-dd::-webkit-scrollbar{width:3px;}
+.const-dd::-webkit-scrollbar-thumb{background:var(--border);}
+.cd-item{padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;}
+.cd-item:last-child{border-bottom:none;}
+.cd-item:hover,.cd-item.hi{background:var(--bg3);}
+.cd-id{font-size:10px;color:var(--muted);background:var(--bg3);border:1px solid var(--border);
+  border-radius:3px;padding:1px 5px;margin-right:6px;}
+.cd-name{font-weight:600;color:var(--text);}
+.cd-dist{font-size:11px;color:var(--muted);}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════
-     LOGIN PAGE
-════════════════════════════════════════════════════ -->
+<!-- ═══════════ LOGIN ═══════════ -->
 <div class="login-wrap" id="loginPage">
   <div class="login-box">
     <div class="login-logo">
@@ -151,9 +169,7 @@ tr:hover td{background:var(--bg3);}
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     MAIN APP (hidden until logged in)
-════════════════════════════════════════════════════ -->
+<!-- ═══════════ MAIN APP ═══════════ -->
 <div id="app" style="display:none">
 
   <div class="hdr">
@@ -191,7 +207,7 @@ tr:hover td{background:var(--bg3);}
     <div class="tab"     onclick="showTab('summary',this)">📈 Summary</div>
   </div>
 
-  <!-- RESULTS -->
+  <!-- RESULTS TAB -->
   <div id="tab-results" class="main">
     <div class="search-row">
       <input id="srch" placeholder="🔍 தொகுதி / மாவட்டம் தேடுக..." oninput="renderTable()">
@@ -225,15 +241,28 @@ tr:hover td{background:var(--bg3);}
     </div>
   </div>
 
-  <!-- ENTRY -->
+  <!-- ENTRY TAB — original structure preserved, only <select> replaced with search -->
   <div id="tab-entry" class="main" style="display:none">
     <div class="entry-grid">
       <div class="panel">
         <h3>📥 வாக்கு புதுப்பிப்பு</h3>
+
+        <!-- CHANGE 1: searchable constituency instead of plain <select> -->
         <div class="fg2">
           <label>தொகுதி</label>
-          <select id="eConst" onchange="loadConstData()"></select>
+          <div class="const-wrap" id="constWrap">
+            <input type="text" class="const-search" id="constSearch"
+              placeholder="தொகுதி பெயர் தேடுக..."
+              autocomplete="off"
+              oninput="cdFilter()"
+              onfocus="cdOpen()"
+              onkeydown="cdKey(event)">
+            <input type="hidden" id="eConst"><!-- actual value, same id as original -->
+            <div class="const-dd" id="constDd"></div>
+          </div>
         </div>
+        <!-- end change 1 -->
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
           <div class="fg2" style="margin:0"><label>சுற்று எண்</label><input type="number" id="eRound" value="1" min="1" max="30"></div>
           <div class="fg2" style="margin:0"><label>நிலை</label>
@@ -244,13 +273,17 @@ tr:hover td{background:var(--bg3);}
             </select>
           </div>
         </div>
+
+        <!-- ORIGINAL vote entry rows — completely unchanged -->
         <div id="partyVoteRows"></div>
+
         <div class="fg2"><label>Reporter குறிப்பு</label><textarea id="eNotes" rows="2" placeholder="விருப்பமான குறிப்பு..."></textarea></div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button class="submit-btn" id="submitBtn" onclick="submitUpdate()">✅ SUBMIT</button>
           <button style="background:none;border:1px solid var(--border);color:var(--text2);padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px" onclick="clearVotes()">CLEAR</button>
         </div>
       </div>
+
       <div class="panel">
         <h3>📊 Round-wise Leader</h3>
         <div id="roundLeaderView" style="color:var(--muted);text-align:center;padding:20px;font-size:13px">தொகுதி தேர்வு செய்க</div>
@@ -262,7 +295,7 @@ tr:hover td{background:var(--bg3);}
     </div>
   </div>
 
-  <!-- SUMMARY -->
+  <!-- SUMMARY TAB -->
   <div id="tab-summary" class="main" style="display:none">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div class="panel">
@@ -281,24 +314,15 @@ tr:hover td{background:var(--bg3);}
 
 <div class="toast" id="toast"></div>
 
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-//  Injected by GitHub Actions on deploy — DO NOT edit manually.
-//  Add these two secrets in your repo → Settings → Secrets → Actions:
-//    SUPABASE_URL       e.g. https://xxxx.supabase.co
-//    SUPABASE_ANON_KEY  e.g. eyJhbGci...
-// ─────────────────────────────────────────────────────────────────────────────
+
 const SUPABASE_URL      = "%%SUPABASE_URL%%"
 const SUPABASE_ANON_KEY = "%%SUPABASE_ANON_KEY%%";
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── PARTIES ──────────────────────────────────────────────
 const PARTIES = {
   dmk:  {name:'DMK+',  color:'#FF2B2B'},
   admk: {name:'ADMK+', color:'#00B050'},
@@ -308,50 +332,37 @@ const PARTIES = {
 };
 const AK = Object.keys(PARTIES);
 
-// ── STATE ────────────────────────────────────────────────
 let currentUser  = null;
 let constituencies = [];
-let partyVotes   = {};   // { constId: { alliance: { round: votes } } }
+let partyVotes   = {};
 let logs         = [];
 
-// ── BOOT: check session first ─────────────────────────────
+// ── BOOT ────────────────────────────────────────────────
 window.addEventListener('load', async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) {
-    currentUser = session.user;
-    bootApp();
-  }
-  // else: login page is already visible by default
+  if (session?.user) { currentUser = session.user; bootApp(); }
 });
 
-// ── AUTH ─────────────────────────────────────────────────
+// ── AUTH ────────────────────────────────────────────────
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
   if (!email || !pass) { showLoginErr('Email மற்றும் Password தேவை'); return; }
-
   const btn = document.getElementById('loginBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin-inline"></span> Logging in...';
   document.getElementById('loginErr').style.display = 'none';
-
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-
   if (error) {
     showLoginErr(error.message || 'Login failed');
-    btn.disabled = false;
-    btn.textContent = 'LOGIN →';
-    return;
+    btn.disabled = false; btn.textContent = 'LOGIN →'; return;
   }
-
-  currentUser = data.user;
-  bootApp();
+  currentUser = data.user; bootApp();
 }
 
 async function doLogout() {
   await sb.auth.signOut();
-  currentUser = null;
-  constituencies = []; partyVotes = {}; logs = [];
+  currentUser = null; constituencies = []; partyVotes = {}; logs = [];
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginPage').style.display = 'flex';
   document.getElementById('loginEmail').value = '';
@@ -365,7 +376,6 @@ function showLoginErr(msg) {
   el.textContent = msg; el.style.display = 'block';
 }
 
-// ── BOOT APP ─────────────────────────────────────────────
 async function bootApp() {
   document.getElementById('loginPage').style.display = 'none';
   document.getElementById('app').style.display = 'block';
@@ -373,21 +383,19 @@ async function bootApp() {
   startClock();
   await loadData();
   populateDistFilter();
-  populateEntryConst();
+  populateEntryConst();   // builds the searchable dropdown
   renderTable();
   updateScoreboard();
 }
 
-// ── LOAD DATA FROM SUPABASE ───────────────────────────────
+// ── LOAD DATA ───────────────────────────────────────────
 async function loadData() {
   try {
     const [{ data: cs, error: e1 }, { data: pv, error: e2 }] = await Promise.all([
       sb.from('constituencies').select('id,name,district,status').order('id'),
       sb.from('party_votes').select('constituency_id,round,alliance,votes').order('constituency_id').order('round')
     ]);
-    if (e1) throw e1;
-    if (e2) throw e2;
-
+    if (e1) throw e1; if (e2) throw e2;
     constituencies = cs || [];
     partyVotes = {};
     (pv || []).forEach(r => {
@@ -397,18 +405,14 @@ async function loadData() {
     });
     document.getElementById('lastUpdate').textContent =
       new Date().toLocaleTimeString('ta-IN', {hour12: false});
-  } catch(e) {
-    showToast('தரவு பிழை: ' + e.message, 'err');
-  }
+  } catch(e) { showToast('தரவு பிழை: ' + e.message, 'err'); }
 }
 
-// ── REFRESH ───────────────────────────────────────────────
 async function refreshData() {
   const btn = document.getElementById('refreshBtn');
   btn.disabled = true; btn.textContent = '↻ Loading...';
   await loadData();
-  renderTable();
-  updateScoreboard();
+  renderTable(); updateScoreboard();
   const selId = parseInt(document.getElementById('eConst')?.value);
   if (selId) renderRoundLeaderView(selId);
   const activeTab = document.querySelector('.tab.on')?.textContent || '';
@@ -417,7 +421,7 @@ async function refreshData() {
   showToast('புதுப்பிக்கப்பட்டது ✓', 'ok');
 }
 
-// ── LEADER LOGIC ─────────────────────────────────────────
+// ── LEADER LOGIC ────────────────────────────────────────
 function getLeader(constId) {
   const votes = partyVotes[constId] || {};
   const totals = {};
@@ -439,14 +443,17 @@ function getLeader(constId) {
   };
 }
 
-// ── SCOREBOARD ────────────────────────────────────────────
+// ── CHANGE 2: SCOREBOARD — count any constituency with votes entered ─
+// Original only counted status!=='pending', missing newly entered data.
+// Now: count seats whenever there is vote data (getLeader returns non-null),
+// regardless of status — matches real election counting behaviour.
 function updateScoreboard() {
   const seats = {dmk:0, admk:0, tvk:0, ntk:0, oth:0};
   let counting = 0, declared = 0, pending = 0;
   constituencies.forEach(c => {
     const l = getLeader(c.id);
-    if (c.status !== 'pending' && l) seats[l.leading] = (seats[l.leading] || 0) + 1;
-    if (c.status === 'counting') counting++;
+    if (l) seats[l.leading] = (seats[l.leading] || 0) + 1;  // count if ANY votes exist
+    if      (c.status === 'counting') counting++;
     else if (c.status === 'declared') declared++;
     else pending++;
   });
@@ -456,7 +463,7 @@ function updateScoreboard() {
   document.getElementById('st-pending').textContent  = pending;
 }
 
-// ── RESULTS TABLE ─────────────────────────────────────────
+// ── RESULTS TABLE ────────────────────────────────────────
 function renderTable() {
   const srch  = (document.getElementById('srch')?.value || '').toLowerCase();
   const fAl   = document.getElementById('fAl')?.value   || '';
@@ -498,16 +505,87 @@ function populateDistFilter() {
   if (sel) sel.innerHTML = '<option value="">அனைத்து மாவட்டம்</option>' + dists.map(d => `<option>${d}</option>`).join('');
 }
 
-// ── ENTRY TAB ─────────────────────────────────────────────
+// ── CHANGE 1: SEARCHABLE CONSTITUENCY DROPDOWN ───────────
+// Replaces original populateEntryConst() that built a <select>.
+// The hidden #eConst input carries the same value the original select did.
 function populateEntryConst() {
-  const sel = document.getElementById('eConst');
-  if (!sel || sel.options.length > 1) return;
-  sel.innerHTML = constituencies.map(c =>
-    `<option value="${c.id}">[${c.id}] ${c.name} — ${c.district}</option>`
-  ).join('');
-  loadConstData();
+  buildCdItems();
+  // Select first constituency by default (mirrors original select behaviour)
+  if (constituencies.length && !document.getElementById('eConst').value) {
+    const c = constituencies[0];
+    cdPick(c.id, c.name, c.district);
+  }
 }
 
+let _cdHi = -1;   // highlighted index in dropdown
+
+function buildCdItems() {
+  const dd = document.getElementById('constDd');
+  if (!dd) return;
+  dd.innerHTML = constituencies.map((c, i) =>
+    `<div class="cd-item" data-id="${c.id}" data-i="${i}"
+       onclick="cdPick(${c.id},'${c.name.replace(/'/g,"&#39;")}','${c.district.replace(/'/g,"&#39;")}')"
+       onmouseenter="_cdHi=${i};cdHilight()">
+      <span><span class="cd-id">${c.id}</span><span class="cd-name">${c.name}</span></span>
+      <span class="cd-dist">${c.district}</span>
+    </div>`
+  ).join('');
+}
+
+function cdFilter() {
+  const q  = (document.getElementById('constSearch').value || '').toLowerCase().trim();
+  const dd = document.getElementById('constDd');
+  let vis  = 0;
+  dd.querySelectorAll('.cd-item').forEach(el => {
+    const nm = el.querySelector('.cd-name').textContent.toLowerCase();
+    const id = el.dataset.id;
+    const ok = !q || nm.includes(q) || id.startsWith(q);
+    el.style.display = ok ? '' : 'none';
+    if (ok) vis++;
+  });
+  _cdHi = -1;
+  dd.classList.toggle('open', vis > 0);
+}
+
+function cdOpen() {
+  buildCdItems();   // rebuild in case constituencies reloaded
+  cdFilter();
+  document.getElementById('constDd').classList.add('open');
+}
+
+function cdPick(id, name, dist) {
+  document.getElementById('eConst').value      = id;
+  document.getElementById('constSearch').value = name + ' — ' + dist;
+  document.getElementById('constDd').classList.remove('open');
+  _cdHi = -1;
+  loadConstData();  // original function — unchanged
+}
+
+function cdHilight() {
+  const dd = document.getElementById('constDd');
+  dd.querySelectorAll('.cd-item:not([style*="none"])').forEach((el, i) => {
+    el.classList.toggle('hi', i === _cdHi);
+    if (i === _cdHi) el.scrollIntoView({block:'nearest'});
+  });
+}
+
+function cdKey(e) {
+  const dd   = document.getElementById('constDd');
+  const opts = [...dd.querySelectorAll('.cd-item:not([style*="display: none"])')];
+  if (!dd.classList.contains('open') || !opts.length) return;
+  if (e.key === 'ArrowDown')  { e.preventDefault(); _cdHi = Math.min(_cdHi+1, opts.length-1); cdHilight(); }
+  else if (e.key === 'ArrowUp')   { e.preventDefault(); _cdHi = Math.max(_cdHi-1, 0); cdHilight(); }
+  else if (e.key === 'Enter' && _cdHi >= 0) { e.preventDefault(); opts[_cdHi].click(); }
+  else if (e.key === 'Escape') dd.classList.remove('open');
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!document.getElementById('constWrap')?.contains(e.target))
+    document.getElementById('constDd')?.classList.remove('open');
+});
+
+// ── ENTRY — ORIGINAL LOGIC UNCHANGED ────────────────────
 function loadConstData() {
   const id = parseInt(document.getElementById('eConst')?.value);
   const c  = constituencies.find(x => x.id === id);
@@ -518,6 +596,7 @@ function loadConstData() {
   ));
   document.getElementById('eRound').value = mr > 0 ? mr + 1 : 1;
   const round = parseInt(document.getElementById('eRound').value) || 1;
+  // ── ORIGINAL vote-row render — completely unchanged ──
   document.getElementById('partyVoteRows').innerHTML = AK.map(a => {
     const p = PARTIES[a];
     const v = (partyVotes[id]?.[a] || {})[round] || '';
@@ -553,13 +632,13 @@ function renderRoundLeaderView(constId) {
   allRounds.forEach(round => {
     AK.forEach(a => cum[a] += (votes[a] || {})[round] || 0);
     const sorted = [...AK].map(a => [a, cum[a]]).sort(([, x], [, y]) => y - x);
-    const [topA, topV] = sorted[0];
-    const margin = topV - (sorted[1]?.[1] || 0);
+    const [topA] = sorted[0];
+    const margin = sorted[0][1] - (sorted[1]?.[1] || 0);
     const p = PARTIES[topA];
     html += `<tr><td style="font-weight:700;color:var(--text2)">R${round}</td>`;
     AK.forEach(a => {
       const isTop = a === topA;
-      html += `<td style="font-weight:${isTop ? 700 : 400};color:${isTop ? PARTIES[a].color : 'var(--text2)'}">${cum[a] > 0 ? cum[a].toLocaleString('en-IN') : '—'}</td>`;
+      html += `<td style="font-weight:${isTop?700:400};color:${isTop?PARTIES[a].color:'var(--text2)'}">${cum[a]>0?cum[a].toLocaleString('en-IN'):'—'}</td>`;
     });
     html += `<td><span class="party-dot" style="background:${p.color}"></span><span style="color:${p.color};font-weight:700">${p.name}</span></td>`;
     html += `<td style="color:var(--green);font-weight:700">+${margin.toLocaleString('en-IN')}</td></tr>`;
@@ -568,11 +647,10 @@ function renderRoundLeaderView(constId) {
   container.innerHTML = html;
 }
 
-// ── SUBMIT ────────────────────────────────────────────────
 async function submitUpdate() {
-  const id     = parseInt(document.getElementById('eConst').value);
-  const c      = constituencies.find(x => x.id === id);
-  if (!c) return;
+  const id    = parseInt(document.getElementById('eConst').value);
+  const c     = constituencies.find(x => x.id === id);
+  if (!c) { showToast('தொகுதி தேர்வு செய்க!', 'err'); return; }
   const round  = parseInt(document.getElementById('eRound').value) || 1;
   const status = document.getElementById('eSt').value;
   const notes  = document.getElementById('eNotes').value.trim();
@@ -581,11 +659,8 @@ async function submitUpdate() {
   btn.disabled = true; btn.innerHTML = '<span class="spin-inline"></span> Saving...';
 
   try {
-    // 1. Upsert party_votes (one row per alliance per round)
     const upserts = AK.map(a => ({
-      constituency_id: id,
-      round,
-      alliance: a,
+      constituency_id: id, round, alliance: a,
       votes: parseInt(document.getElementById('pv_' + a)?.value) || 0,
       updated_by: currentUser?.id
     }));
@@ -594,23 +669,19 @@ async function submitUpdate() {
     });
     if (e1) throw e1;
 
-    // 2. Update constituency status
     const { error: e2 } = await sb.from('constituencies')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', id);
+      .update({ status, updated_at: new Date().toISOString() }).eq('id', id);
     if (e2) throw e2;
 
-    // 3. Insert into update_logs
     const { error: e3 } = await sb.from('update_logs').insert([{
       constituency_id: id,
-      operator_id:   currentUser?.id,
+      operator_id: currentUser?.id,
       operator_name: currentUser?.email?.split('@')[0] || 'unknown',
-      round,
-      notes: notes || null
+      round, notes: notes || null
     }]);
     if (e3) throw e3;
 
-    // 4. Update local state immediately
+    // Update local state immediately
     if (!partyVotes[id]) partyVotes[id] = {};
     AK.forEach(a => {
       if (!partyVotes[id][a]) partyVotes[id][a] = {};
@@ -619,17 +690,15 @@ async function submitUpdate() {
     const ci = constituencies.findIndex(x => x.id === id);
     if (ci >= 0) constituencies[ci].status = status;
 
-    // 5. Refresh UI
     const l = getLeader(id);
-    logs.unshift({ time: new Date().toLocaleTimeString('ta-IN', {hour12: false}), name: c.name, round, leader: l ? PARTIES[l.leading]?.name : '—', notes });
+    logs.unshift({ time: new Date().toLocaleTimeString('ta-IN', {hour12:false}), name: c.name, round, leader: l ? PARTIES[l.leading]?.name : '—', notes });
     renderLog();
     renderTable();
-    updateScoreboard();
+    updateScoreboard();   // scoreboard updates immediately after submit
     renderRoundLeaderView(id);
     document.getElementById('eNotes').value = '';
-    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ta-IN', {hour12: false});
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ta-IN', {hour12:false});
     showToast(`✅ ${c.name} — R${round} சேமிக்கப்பட்டது`, 'ok');
-
   } catch(e) {
     showToast('பிழை: ' + e.message, 'err');
   } finally {
@@ -657,17 +726,21 @@ function renderLog() {
 
 function quickEntry(id) {
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('on', i === 1));
-  ['results', 'entry', 'summary'].forEach((n, i) => {
+  ['results','entry','summary'].forEach((n, i) => {
     document.getElementById('tab-' + n).style.display = i === 1 ? 'block' : 'none';
   });
   setTimeout(() => {
-    populateEntryConst();
-    const sel = document.getElementById('eConst');
-    if (sel) { sel.value = id; loadConstData(); sel.scrollIntoView({behavior: 'smooth'}); }
+    const c = constituencies.find(x => x.id === id);
+    if (c) {
+      document.getElementById('eConst').value = id;
+      document.getElementById('constSearch').value = c.name + ' — ' + c.district;
+      loadConstData();
+      document.getElementById('constSearch').scrollIntoView({behavior:'smooth'});
+    }
   }, 50);
 }
 
-// ── SUMMARY ───────────────────────────────────────────────
+// ── SUMMARY ─────────────────────────────────────────────
 function renderSummary() {
   const seats = {dmk:0, admk:0, tvk:0, ntk:0, oth:0};
   constituencies.forEach(c => {
@@ -689,9 +762,7 @@ function renderSummary() {
   const top = constituencies
     .filter(c => c.status !== 'pending')
     .map(c => { const l = getLeader(c.id); return l ? {c, l} : null; })
-    .filter(Boolean)
-    .sort((a, b) => b.l.margin - a.l.margin)
-    .slice(0, 10);
+    .filter(Boolean).sort((a, b) => b.l.margin - a.l.margin).slice(0, 10);
 
   document.getElementById('topConst').innerHTML = top.length
     ? top.map(({c, l}, i) => {
@@ -707,17 +778,14 @@ function renderSummary() {
     : '<div style="color:var(--muted);text-align:center;padding:20px">Data entry பிறகு காட்டும்</div>';
 }
 
-// ── EXPORT CSV ────────────────────────────────────────────
+// ── EXPORT CSV ───────────────────────────────────────────
 function exportCSV() {
   const rows = [['No','Constituency','District','Status','MaxRound','LeadingParty','LeadVotes','2ndParty','2ndVotes','Margin']];
   constituencies.forEach(c => {
     const l = getLeader(c.id);
-    rows.push([
-      c.id, c.name, c.district, c.status, l?.maxRound || 0,
-      l ? PARTIES[l.leading]?.name : '', l?.leadVotes || 0,
-      l?.second ? PARTIES[l.second]?.name : '', l?.secondVotes || 0,
-      l?.margin || 0
-    ]);
+    rows.push([c.id, c.name, c.district, c.status, l?.maxRound||0,
+      l ? PARTIES[l.leading]?.name : '', l?.leadVotes||0,
+      l?.second ? PARTIES[l.second]?.name : '', l?.secondVotes||0, l?.margin||0]);
   });
   const csv = rows.map(r => r.join(',')).join('\n');
   const a = document.createElement('a');
@@ -726,7 +794,7 @@ function exportCSV() {
   a.click();
 }
 
-// ── TABS ──────────────────────────────────────────────────
+// ── TABS ─────────────────────────────────────────────────
 function showTab(name, el) {
   ['results','entry','summary'].forEach(n => {
     document.getElementById('tab-' + n).style.display = n === name ? 'block' : 'none';
